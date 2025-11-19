@@ -58,7 +58,7 @@ class DataModel1:
 
     def test_1(self) -> None:
         """Predefined test data 1."""
-        self.add_load(1100.0)
+        self.add_load(1000.0)
         self.add_co2_price(10.0)
         self.add_generator(
             gen_name="Wind",
