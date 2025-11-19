@@ -1,4 +1,4 @@
-"""Data dictionaries for the optimization model."""
+"""Data class for the optimization model 2."""
 
 
 class DataModel2:

@@ -118,15 +118,14 @@ class IntertemporalExpansionModel:
         """Optimize the model."""
         self.model.optimize()
 
-    def get_results(self) -> dict[str, float]:
+    def get_results(self) -> dict[str, float | dict[str, list[float]]]:
         """Get optimization results.
 
         Returns:
-            dict[str, float]: Dictionary with variable names as keys and optimized
-                values as values.
+            dict[str, float | dict[str, list[float]]]: Dictionary with results.
         """
         if self.model.getAttr("Status") != GRB.OPTIMAL:
-            raise ValueError("Model is not optimized to optimality.")
+            raise Exception("Optimization was not successful.")
 
         results = {}
         results["objective_value"] = self.model.objVal
