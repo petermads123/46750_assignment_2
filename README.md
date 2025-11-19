@@ -1,10 +1,8 @@
-# template_repo
-The purpose of this repo is to simply give a template for future repos
+# 46750 Assignment 2
+This repo contains optimization models for the final project of the course 46750
 
 ## Setup
 Add dependencies in pyproject.toml
-Also change project name in here
-Change the package-folder (template_repo) to the same name
 
 ## Create conda environment
 - Have miniconda installed as your environment manager

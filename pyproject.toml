@@ -3,11 +3,11 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "template_repo"
+name = "46750_assignment_2"
 version = "0.1.0"
-description = "template_repo"
+description = "Repo for assignemnt 2 of the course 46750"
 authors = [
-  { name = "Peter Mads Pedersen", email = "petermads123@hotmail.com" }
+  { name = "Peter Mads Pedersen", email = "s214236@dtu.dk" }
 ]
 readme = "README.md"
 requires-python = ">=3.13"
