@@ -1,8 +1,8 @@
-"""Implementation of optimization model 1."""
+"""Implementation of optimization model 2."""
 
 from gurobipy import GRB, Model, quicksum
 
-from assignment_2.model2.data import DataModel2
+from assignment_2.model2.data import DataModel
 
 
 class IntertemporalExpansionModel:
@@ -14,14 +14,22 @@ class IntertemporalExpansionModel:
     def __init__(self) -> None:
         """Initialize instance."""
 
-    def define_model(self, data: DataModel2) -> None:
+    def define_model(
+        self, data: DataModel, model_id: int = 0, weigth: float = 1.0
+    ) -> None:
         """Define the optimization model and its parameters.
 
         Args:
-            data (DataModel2): Data for the optimization model.
+            data (DataModel): Data for the optimization model.
+            model_id (int, optional): Identifier for the model instance
+                if multiple models are created together. Defaults to 0.
+                Leave blank if objective should be defined in this method.
+            weigth (float, optional): Weight of the objective if multiple
         """
         # Create gurobi model
-        self.model = Model("Model2")
+        if model_id == 0:
+            self.model = Model("IntertemporalExpansionModel")
+
         self.gen_names = data.gen_names
         self.T = data.T
 
@@ -48,15 +56,16 @@ class IntertemporalExpansionModel:
                 )
 
                 # Generation at each time period for each generator
-                self.vars[f"{gen}_gen_{t}"] = self.model.addVar(
-                    name=f"generation_{gen}_{t}",
+                self.vars[f"{gen}_gen_{t}_{model_id}"] = self.model.addVar(
+                    name=f"{gen}_gen_{t}_{model_id}",
                     lb=0,
                 )
 
         # Define objective
-        self.model.setObjective(
+        self.model.ModelSense = GRB.MINIMIZE
+        self.model.setObjectiveN(
             quicksum(
-                self.vars[f"{gen}_gen_{t}"]
+                self.vars[f"{gen}_gen_{t}_{model_id}"]
                 * (
                     data.gen_data[gen]["var_opex"]
                     + data.co2_price * data.gen_data[gen]["co2"]
@@ -67,31 +76,34 @@ class IntertemporalExpansionModel:
                 for gen in data.gen_names
                 for t in range(data.T)
             ),
-            GRB.MINIMIZE,
+            index=model_id,
+            weight=weigth,
         )
 
         # Define constraints
         self.constr = {}
         for t in range(data.T):
             # Energy balance constraint
-            self.constr[f"energy_balance_{t}"] = self.model.addConstr(
-                quicksum(self.vars[f"{gen}_gen_{t}"] for gen in data.gen_names)
+            self.constr[f"energy_balance_{t}_{model_id}"] = self.model.addConstr(
+                quicksum(
+                    self.vars[f"{gen}_gen_{t}_{model_id}"] for gen in data.gen_names
+                )
                 >= data.load_series[t],
-                name=f"energy_balance_{t}",
+                name=f"energy_balance_{t}_{model_id}",
             )
 
             for gen in data.gen_names:
                 # Generation constraints
-                self.constr[f"gen_max_{gen}_{t}"] = self.model.addConstr(
-                    self.vars[f"{gen}_gen_{t}"]
+                self.constr[f"gen_max_{gen}_{t}_{model_id}"] = self.model.addConstr(
+                    self.vars[f"{gen}_gen_{t}_{model_id}"]
                     <= self.vars[f"{gen}_cap_{t}"] * data.cf_data[gen]["max_cf"][t],
-                    name=f"gen_max_{gen}_{t}",
+                    name=f"gen_max_{gen}_{t}_{model_id}",
                 )
 
-                self.constr[f"gen_min_{gen}_{t}"] = self.model.addConstr(
-                    self.vars[f"{gen}_gen_{t}"]
+                self.constr[f"gen_min_{gen}_{t}_{model_id}"] = self.model.addConstr(
+                    self.vars[f"{gen}_gen_{t}_{model_id}"]
                     >= self.vars[f"{gen}_cap_{t}"] * data.cf_data[gen]["min_cf"][t],
-                    name=f"gen_min_{gen}_{t}",
+                    name=f"gen_min_{gen}_{t}_{model_id}",
                 )
 
                 # Generation capacity evolution constraints

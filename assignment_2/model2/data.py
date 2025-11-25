@@ -1,8 +1,10 @@
-"""Data class for the optimization model 2."""
+"""Data class for the optimization intertemporal expansion model."""
+
+import numpy as np
 
 
-class DataModel2:
-    """Class for holding data for model 2."""
+class DataModel:
+    """Class for holding data for the intertemporal expansion model."""
 
     def __init__(self) -> None:
         """Initialize instance."""
@@ -12,6 +14,10 @@ class DataModel2:
         self.cf_data: dict[str, dict[str, list[float]]] = {}
         self.T: int
         self.gen_names: list[str] = []
+        self.prev_load_factor: float = 1.0
+        self.scenario_weights: list[float] = []
+        self.cfs: list[dict[str, float | list[float]]] = []
+        self.load_factors: list[float] = []
 
     def add_load_series(self, load_series: list[float]) -> None:
         """Add load series to the instance.
@@ -59,9 +65,9 @@ class DataModel2:
                 If list, must match length of load_series.
             co2 (float, optional): CO2 emissions unit generated. Defaults to 0.
         """
-        if isinstance(max_cf, float):
+        if not isinstance(max_cf, list):
             max_cf = [max_cf] * self.T
-        if isinstance(min_cf, float):
+        if not isinstance(min_cf, list):
             min_cf = [min_cf] * self.T
 
         self.gen_data[gen_name] = {
@@ -80,43 +86,225 @@ class DataModel2:
 
         self.gen_names.append(gen_name)
 
-    def test_1(self) -> None:
-        """Predefined test data 1."""
-        self.add_load_series([400, 500, 600, 700])
-        self.add_co2_price(20.0)
+    def set_cf(self, cf: dict[str, float | list[float]]) -> None:
+        """Set a factor to scale all renewable generators' capacity factors.
+
+        Args:
+            cf (dict[str, float | list[float]]): Scaling factors for renewable generators.
+        """
+        for gen in self.gen_names:
+            if gen in cf:
+                cf_new = cf[gen]
+                if isinstance(cf_new, float | int):
+                    new_cf = [cf_new] * self.T
+                elif isinstance(cf_new, list):
+                    new_cf = cf_new
+
+                self.cf_data[gen]["max_cf"] = new_cf
+
+    def scale_load(self, factor: float) -> None:
+        """Set a factor to scale the load series.
+
+        Args:
+            factor (float): Scaling factor for the load series.
+        """
+        self.load_series = [
+            load / self.prev_load_factor * factor for load in self.load_series
+        ]
+        self.prev_load_factor = factor
+
+    def set_scenario_factors(
+        self,
+        scenario_weights: list[float],
+        cfs: list[dict[str, float | list[float]]],
+        load_factors: list[float],
+    ) -> None:
+        """Set scenario factors for uncertainty modeling.
+
+        Args:
+            scenario_weights (list[float]): Weights for each uncertainty scenario.
+            cfs (list[dict[str, float | list[float]]]): New CFs for each scenario to adjust renewable generation.
+            load_factors (list[float]): Factors to adjust load series.
+        """
+        self.scenario_weights = scenario_weights
+        self.cfs = cfs
+        self.load_factors = load_factors
+
+    def jonas(self) -> None:
+        """Predefined test data jonas."""
+        load = np.array(
+            [
+                36,
+                37.1,
+                38.2,
+                39.3,
+                40.4,
+                41.5,
+                42.6,
+                43.7,
+                44.8,
+                45.9,
+                47,
+                48.2,
+                49.4,
+                50.6,
+                51.8,
+                53,
+                54.2,
+                55.4,
+                56.6,
+                57.8,
+                59,
+            ]
+        )
+        self.add_load_series((load / 10**6).tolist())
+        self.add_co2_price(32.6)
         self.add_generator(
-            gen_name="Wind",
-            capex=50.0,
-            fixed_opex=5.0,
-            var_opex=0.0,
-            decex=25.0,
-            initial_capacity=300.0,
-            max_capacity=800.0,
-            max_cf=[0.4, 0.5, 0.6, 0.5],
-            min_cf=[0, 0, 0, 0],
+            gen_name="Offshore_Wind",
+            capex=0,  # TBD
+            fixed_opex=0,  # TBD
+            var_opex=0,  # TBD
+            decex=0,  # TBD
+            initial_capacity=0,  # TBD
+            max_capacity=0,  # TBD
+            max_cf=1,
+            min_cf=0,
             co2=0,
         )
         self.add_generator(
-            gen_name="Solar",
-            capex=40.0,
-            fixed_opex=1.0,
-            var_opex=0.0,
-            decex=20.0,
-            initial_capacity=100.0,
-            max_capacity=800.0,
-            max_cf=[0.8, 0.5, 0.3, 0.2],
-            min_cf=[0.0, 0.0, 0.0, 0.0],
-            co2=0.0,
+            gen_name="Onshore_Wind",
+            capex=0,  # TBD
+            fixed_opex=0,  # TBD
+            var_opex=0,  # TBD
+            decex=0,  # TBD
+            initial_capacity=0,  # TBD
+            max_capacity=0,  # TBD
+            max_cf=1,
+            min_cf=0,
+            co2=0,
         )
         self.add_generator(
-            gen_name="Conv",
-            capex=20.0,
-            fixed_opex=5.0,
-            var_opex=5.0,
-            decex=10.0,
-            initial_capacity=500.0,
-            max_capacity=10000.0,
-            max_cf=[1.0, 1.0, 1.0, 1.0],
-            min_cf=[0.1, 0.1, 0.1, 0.1],
-            co2=10.0,
+            gen_name="Solar_PV",
+            capex=0,  # TBD
+            fixed_opex=0,  # TBD
+            var_opex=0,  # TBD
+            decex=0,  # TBD
+            initial_capacity=0,  # TBD
+            max_capacity=0,  # TBD
+            max_cf=1,
+            min_cf=0,
+            co2=0,
+        )
+        self.add_generator(
+            gen_name="Conventional",
+            capex=0,  # TBD
+            fixed_opex=0,  # TBD
+            var_opex=0,  # TBD
+            decex=0,  # TBD
+            initial_capacity=0,  # TBD
+            max_capacity=0,  # TBD
+            max_cf=1,
+            min_cf=0,
+            co2=0,  # TBD
+        )
+        self.set_scenario_factors(
+            scenario_weights=[
+                0.027583,
+                0.069542,
+                0.139083,
+                0.069542,
+                0.027583,
+                0.027583,
+                0.069542,
+                0.139083,
+                0.069542,
+                0.027583,
+                0.027583,
+                0.069542,
+                0.139083,
+                0.069542,
+                0.027583,
+            ],
+            cfs=[
+                {
+                    "Offshore_Wind": 0.530145459,
+                    "Onshore_Wind": 0.370145459,
+                    "Solar_PV": 0.15043685,
+                },
+                {
+                    "Offshore_Wind": 0.473233414,
+                    "Onshore_Wind": 0.313233414,
+                    "Solar_PV": 0.136019132,
+                },
+                {"Offshore_Wind": 0.41, "Onshore_Wind": 0.25, "Solar_PV": 0.12},
+                {
+                    "Offshore_Wind": 0.346766586,
+                    "Onshore_Wind": 0.186766586,
+                    "Solar_PV": 0.103980868,
+                },
+                {
+                    "Offshore_Wind": 0.289854541,
+                    "Onshore_Wind": 0.129854541,
+                    "Solar_PV": 0.08956315,
+                },
+                {
+                    "Offshore_Wind": 0.530145459,
+                    "Onshore_Wind": 0.370145459,
+                    "Solar_PV": 0.15043685,
+                },
+                {
+                    "Offshore_Wind": 0.473233414,
+                    "Onshore_Wind": 0.313233414,
+                    "Solar_PV": 0.136019132,
+                },
+                {"Offshore_Wind": 0.41, "Onshore_Wind": 0.25, "Solar_PV": 0.12},
+                {
+                    "Offshore_Wind": 0.346766586,
+                    "Onshore_Wind": 0.186766586,
+                    "Solar_PV": 0.103980868,
+                },
+                {
+                    "Offshore_Wind": 0.289854541,
+                    "Onshore_Wind": 0.129854541,
+                    "Solar_PV": 0.08956315,
+                },
+                {
+                    "Offshore_Wind": 0.530145459,
+                    "Onshore_Wind": 0.370145459,
+                    "Solar_PV": 0.15043685,
+                },
+                {
+                    "Offshore_Wind": 0.473233414,
+                    "Onshore_Wind": 0.313233414,
+                    "Solar_PV": 0.136019132,
+                },
+                {"Offshore_Wind": 0.41, "Onshore_Wind": 0.25, "Solar_PV": 0.12},
+                {
+                    "Offshore_Wind": 0.346766586,
+                    "Onshore_Wind": 0.186766586,
+                    "Solar_PV": 0.103980868,
+                },
+                {
+                    "Offshore_Wind": 0.289854541,
+                    "Onshore_Wind": 0.129854541,
+                    "Solar_PV": 0.08956315,
+                },
+            ],
+            load_factors=[
+                0.916969697,
+                0.916969697,
+                0.916969697,
+                0.916969697,
+                0.916969697,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1.082415531,
+                1.082415531,
+                1.082415531,
+                1.082415531,
+                1.082415531,
+            ],
         )

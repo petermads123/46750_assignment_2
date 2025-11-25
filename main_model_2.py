@@ -1,10 +1,10 @@
 """Model 2 main script."""
 
-from assignment_2.model2 import DataModel2, IntertemporalExpansionModel
+from assignment_2.model2 import DataModel, IntertemporalExpansionModel
 
 # test 1
 model = IntertemporalExpansionModel()
-data = DataModel2()
+data = DataModel()
 data.test_1()
 model.define_model(data=data)
 model.optimize()
