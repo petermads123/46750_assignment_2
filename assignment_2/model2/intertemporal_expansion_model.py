@@ -152,11 +152,6 @@ class IntertemporalExpansionModel:
                 self.vars[f"{gen}_cap_{t}"].X for t in range(self.T)
             ]
 
-            # Generation per timestamp (fall back to time-less var if time-indexed var not present)
-            results["generation"][gen] = [
-                self.vars[f"{gen}_gen_{t}"].X for t in range(self.T)
-            ]
-
             # Investments per timestamp
             results["investments"][gen] = [
                 self.vars[f"{gen}_inv_{t}"].X for t in range(self.T)

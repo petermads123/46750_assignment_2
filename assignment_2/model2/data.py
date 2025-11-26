@@ -1,6 +1,7 @@
 """Data class for the optimization intertemporal expansion model."""
 
 import numpy as np
+from gurobipy import GRB
 
 
 class DataModel:
@@ -44,7 +45,7 @@ class DataModel:
         var_opex: float = 0,
         decex: float = 0,
         initial_capacity: float = 0,
-        max_capacity: float = 0,
+        max_capacity: float = GRB.INFINITY,
         max_cf: list[float] | float = 1,
         min_cf: list[float] | float = 0,
         co2: float = 0,
@@ -131,7 +132,18 @@ class DataModel:
         self.load_factors = load_factors
 
     def jonas(self) -> None:
-        """Predefined test data jonas."""
+        """Predefined test data jonas.
+
+        In the Jonas test case (name has no meaning) data i represendted as yearly values over 20 years from 2030 2050.
+        Units:
+            Energy = MWh
+            Power = MWh/year
+            CO2 = tonCO2/MWh
+            CO2_price = EUR/tonCO2
+            CAPEX, DECEX, fixed_OPEX = EUR/MWh/year
+            var_OPEX = EUR/MWh
+        """
+        hours_per_year = 365 * 24
         load = np.array(
             [
                 36,
@@ -157,55 +169,67 @@ class DataModel:
                 59,
             ]
         )
-        self.add_load_series((load / 10**6).tolist())
+        self.add_load_series((load * 10**6).tolist())
         self.add_co2_price(32.6)
         self.add_generator(
             gen_name="Offshore_Wind",
-            capex=0,  # TBD
-            fixed_opex=0,  # TBD
-            var_opex=0,  # TBD
-            decex=0,  # TBD
-            initial_capacity=0,  # TBD
-            max_capacity=0,  # TBD
+            capex=2_630_000 * hours_per_year,
+            fixed_opex=34_000,
+            var_opex=3.45,
+            decex=507_000 * hours_per_year,
+            initial_capacity=2469 * hours_per_year,
+            max_capacity=GRB.INFINITY,
             max_cf=1,
             min_cf=0,
             co2=0,
         )
         self.add_generator(
             gen_name="Onshore_Wind",
-            capex=0,  # TBD
-            fixed_opex=0,  # TBD
-            var_opex=0,  # TBD
-            decex=0,  # TBD
-            initial_capacity=0,  # TBD
-            max_capacity=0,  # TBD
+            capex=2_291_300 * hours_per_year,
+            fixed_opex=16_500,
+            var_opex=1.98,
+            decex=86_400 * hours_per_year,
+            initial_capacity=4808 * hours_per_year,
+            max_capacity=GRB.INFINITY,
             max_cf=1,
             min_cf=0,
             co2=0,
         )
         self.add_generator(
             gen_name="Solar_PV",
-            capex=0,  # TBD
-            fixed_opex=0,  # TBD
-            var_opex=0,  # TBD
-            decex=0,  # TBD
-            initial_capacity=0,  # TBD
-            max_capacity=0,  # TBD
+            capex=1_070_000 * hours_per_year,
+            fixed_opex=190_000,
+            var_opex=0,
+            decex=43_200 * hours_per_year,
+            initial_capacity=3529 * hours_per_year,
+            max_capacity=GRB.INFINITY,
             max_cf=1,
             min_cf=0,
             co2=0,
         )
         self.add_generator(
-            gen_name="Conventional",
-            capex=0,  # TBD
-            fixed_opex=0,  # TBD
-            var_opex=0,  # TBD
-            decex=0,  # TBD
-            initial_capacity=0,  # TBD
-            max_capacity=0,  # TBD
+            gen_name="Coal",
+            capex=2_103_200 * hours_per_year,
+            fixed_opex=34_350,
+            var_opex=3.21,
+            decex=0,
+            initial_capacity=2191 * hours_per_year,
+            max_capacity=GRB.INFINITY,
             max_cf=1,
             min_cf=0,
-            co2=0,  # TBD
+            co2=0.84,
+        )
+        self.add_generator(
+            gen_name="Natural_Gas",
+            capex=1_914_070 * hours_per_year,
+            fixed_opex=9_890,
+            var_opex=5.40,
+            decex=0,
+            initial_capacity=1706 * hours_per_year,
+            max_capacity=GRB.INFINITY,
+            max_cf=1,
+            min_cf=0,
+            co2=0.37,
         )
         self.set_scenario_factors(
             scenario_weights=[
