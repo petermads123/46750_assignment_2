@@ -1,5 +1,7 @@
 """Implementation of optimization model 2."""
 
+import matplotlib.pyplot as plt
+import numpy as np
 from gurobipy import GRB, Model, quicksum
 
 from assignment_2.model2.data import DataModel
@@ -130,7 +132,7 @@ class IntertemporalExpansionModel:
         """Optimize the model."""
         self.model.optimize()
 
-    def get_results(self) -> dict[str, float | dict[str, list[float]]]:
+    def get_results(self) -> tuple[dict[str, dict[str, list[float]]], float]:
         """Get optimization results.
 
         Returns:
@@ -139,10 +141,8 @@ class IntertemporalExpansionModel:
         if self.model.getAttr("Status") != GRB.OPTIMAL:
             raise Exception("Optimization was not successful.")
 
-        results = {}
-        results["objective_value"] = self.model.objVal
+        results: dict[str, dict[str, list[float]]] = {}
         results["capacities"] = {}
-        results["generation"] = {}
         results["investments"] = {}
         results["decommissions"] = {}
 
@@ -162,4 +162,45 @@ class IntertemporalExpansionModel:
                 self.vars[f"{gen}_dec_{t}"].X for t in range(self.T)
             ]
 
-        return results
+        return results, self.model.objVal
+
+    def plot_results(self, scale_factor: float = 1.0) -> None:
+        """Plot optimization results."""
+        results, _ = self.get_results()
+
+        n_gens = len(self.gen_names)
+        investments = np.zeros((self.T, n_gens))
+        decommissions = np.zeros((self.T, n_gens))
+
+        plt.figure(figsize=(10, 6))
+        for i, gen in enumerate(self.gen_names):
+            plt.plot(
+                [capacity / scale_factor for capacity in results["capacities"][gen]],
+                label=f"Capacity of {gen}",
+            )
+
+            investments[:, i] = [
+                investment / scale_factor for investment in results["investments"][gen]
+            ]
+            decommissions[:, i] = [
+                -decommission / scale_factor
+                for decommission in results["decommissions"][gen]
+            ]
+            plt.bar(
+                range(self.T),
+                investments[:, i],
+                bottom=np.sum(investments[:, :i], axis=1),
+                label=f"Investments of {gen}",
+            )
+            plt.bar(
+                range(self.T),
+                decommissions[:, i],
+                bottom=np.sum(decommissions[:, :i], axis=1),
+                label=f"Decommissions of {gen}",
+            )
+
+        plt.xlabel("Time Period")
+        plt.ylabel("Capacity [MW]")
+        plt.title("Generator Capacities Over Time")
+        plt.legend()
+        plt.show()

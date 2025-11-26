@@ -174,7 +174,7 @@ class DataModel:
         self.add_generator(
             gen_name="Offshore_Wind",
             capex=2_630_000 * hours_per_year,
-            fixed_opex=34_000,
+            fixed_opex=34_000 * hours_per_year,
             var_opex=3.45,
             decex=507_000 * hours_per_year,
             initial_capacity=2469 * hours_per_year,
@@ -186,7 +186,7 @@ class DataModel:
         self.add_generator(
             gen_name="Onshore_Wind",
             capex=2_291_300 * hours_per_year,
-            fixed_opex=16_500,
+            fixed_opex=16_500 * hours_per_year,
             var_opex=1.98,
             decex=86_400 * hours_per_year,
             initial_capacity=4808 * hours_per_year,
@@ -198,7 +198,7 @@ class DataModel:
         self.add_generator(
             gen_name="Solar_PV",
             capex=1_070_000 * hours_per_year,
-            fixed_opex=190_000,
+            fixed_opex=190_000 * hours_per_year,
             var_opex=0,
             decex=43_200 * hours_per_year,
             initial_capacity=3529 * hours_per_year,
@@ -210,7 +210,7 @@ class DataModel:
         self.add_generator(
             gen_name="Coal",
             capex=2_103_200 * hours_per_year,
-            fixed_opex=34_350,
+            fixed_opex=34_350 * hours_per_year,
             var_opex=3.21,
             decex=0,
             initial_capacity=2191 * hours_per_year,
@@ -222,7 +222,7 @@ class DataModel:
         self.add_generator(
             gen_name="Natural_Gas",
             capex=1_914_070 * hours_per_year,
-            fixed_opex=9_890,
+            fixed_opex=9_890 * hours_per_year,
             var_opex=5.40,
             decex=0,
             initial_capacity=1706 * hours_per_year,

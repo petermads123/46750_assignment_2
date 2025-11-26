@@ -2,11 +2,12 @@
 
 from assignment_2.model2 import DataModel, IntertemporalExpansionModel
 
-# test 1
 model = IntertemporalExpansionModel()
 data = DataModel()
 data.jonas()
 model.define_model(data=data)
 model.optimize()
-results = model.get_results()
+results, obj_val = model.get_results()
 print(results)
+print("Objective value:", obj_val)
+model.plot_results(scale_factor=365 * 24)
