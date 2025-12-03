@@ -17,12 +17,17 @@ class IntertemporalExpansionModel:
         """Initialize instance."""
 
     def define_model(
-        self, data: DataModel, model_id: int = 0, weigth: float = 1.0
+        self,
+        data: DataModel,
+        discount_factor: float = 1.0,
+        model_id: int = 0,
+        weigth: float = 1.0,
     ) -> None:
         """Define the optimization model and its parameters.
 
         Args:
             data (DataModel): Data for the optimization model.
+            discount_factor (float, optional): Discount factor for future costs. Defaults to 1.0.
             model_id (int, optional): Identifier for the model instance
                 if multiple models are created together. Defaults to 0.
                 Leave blank if objective should be defined in this method.
@@ -34,6 +39,7 @@ class IntertemporalExpansionModel:
 
         self.gen_names = data.gen_names
         self.T = data.T
+        self.colors = data.colors
 
         # Define variables
         self.vars = {}
@@ -67,15 +73,18 @@ class IntertemporalExpansionModel:
         self.model.ModelSense = GRB.MINIMIZE
         self.model.setObjectiveN(
             quicksum(
-                self.vars[f"{gen}_gen_{t}_{model_id}"]
-                * (
-                    data.gen_data[gen]["var_opex"]
-                    + data.co2_price * data.gen_data[gen]["co2"]
+                quicksum(
+                    self.vars[f"{gen}_gen_{t}_{model_id}"]
+                    * (
+                        data.gen_data[gen]["var_opex"]
+                        + data.co2_price * data.gen_data[gen]["co2"]
+                    )
+                    + data.gen_data[gen]["fixed_opex"] * self.vars[f"{gen}_cap_{t}"]
+                    + self.vars[f"{gen}_inv_{t}"] * data.gen_data[gen]["capex"]
+                    + self.vars[f"{gen}_dec_{t}"] * data.gen_data[gen]["decex"]
+                    for gen in data.gen_names
                 )
-                + data.gen_data[gen]["fixed_opex"] * self.vars[f"{gen}_cap_{t}"]
-                + self.vars[f"{gen}_inv_{t}"] * data.gen_data[gen]["capex"]
-                + self.vars[f"{gen}_dec_{t}"] * data.gen_data[gen]["decex"]
-                for gen in data.gen_names
+                / (1 + discount_factor) ** t
                 for t in range(data.T)
             ),
             index=model_id,
@@ -172,11 +181,12 @@ class IntertemporalExpansionModel:
         investments = np.zeros((self.T, n_gens))
         decommissions = np.zeros((self.T, n_gens))
 
-        plt.figure(figsize=(10, 6))
+        plt.figure(figsize=(6, 3))
         for i, gen in enumerate(self.gen_names):
             plt.plot(
                 [capacity / scale_factor for capacity in results["capacities"][gen]],
                 label=f"Capacity of {gen}",
+                color=self.colors[gen],
             )
 
             investments[:, i] = [
@@ -191,16 +201,20 @@ class IntertemporalExpansionModel:
                 investments[:, i],
                 bottom=np.sum(investments[:, :i], axis=1),
                 label=f"Investments of {gen}",
+                color=self.colors[gen],
+                alpha=0.7,
             )
             plt.bar(
                 range(self.T),
                 decommissions[:, i],
                 bottom=np.sum(decommissions[:, :i], axis=1),
                 label=f"Decommissions of {gen}",
+                color=self.colors[gen],
+                alpha=0.7,
             )
 
-        plt.xlabel("Time Period")
-        plt.ylabel("Capacity [MW]")
-        plt.title("Generator Capacities Over Time")
+        plt.xlabel("Year")
+        plt.ylabel("Capacity [MWh/year]")
+        plt.title("Generator Capacities")
         plt.legend()
         plt.show()

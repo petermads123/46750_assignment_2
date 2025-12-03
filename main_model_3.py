@@ -6,7 +6,7 @@ from assignment_2.model3 import UncertaintyModel
 model = UncertaintyModel()
 data = DataModel()
 data.jonas()
-model.define_uncertainty_model(data)
+model.define_uncertainty_model(data=data, discount_factor=0.05)
 model.optimize()
 results, obj_val = model.get_results()
 print(results)

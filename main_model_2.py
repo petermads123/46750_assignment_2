@@ -5,7 +5,7 @@ from assignment_2.model2 import DataModel, IntertemporalExpansionModel
 model = IntertemporalExpansionModel()
 data = DataModel()
 data.jonas()
-model.define_model(data=data)
+model.define_model(data=data, discount_factor=0.05)
 model.optimize()
 results, obj_val = model.get_results()
 print(results)

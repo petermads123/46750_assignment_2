@@ -1,4 +1,7 @@
-"""Data class for the optimization intertemporal expansion model."""
+"""Data class for the optimization intertemporal expansion model.
+
+Including data for uncertainty modeling.
+"""
 
 import numpy as np
 from gurobipy import GRB
@@ -19,6 +22,7 @@ class DataModel:
         self.scenario_weights: list[float] = []
         self.cfs: list[dict[str, float | list[float]]] = []
         self.load_factors: list[float] = []
+        self.colors: dict[str, str] = {}
 
     def add_load_series(self, load_series: list[float]) -> None:
         """Add load series to the instance.
@@ -49,6 +53,7 @@ class DataModel:
         max_cf: list[float] | float = 1,
         min_cf: list[float] | float = 0,
         co2: float = 0,
+        color: str = "black",
     ) -> None:
         """Add generator data to the instance.
 
@@ -65,6 +70,7 @@ class DataModel:
             min_cf (list[float] | float, optional): Minimum capacity factor. Defaults to 0.
                 If list, must match length of load_series.
             co2 (float, optional): CO2 emissions unit generated. Defaults to 0.
+            color (str, optional): Color for plotting. Defaults to "black".
         """
         if not isinstance(max_cf, list):
             max_cf = [max_cf] * self.T
@@ -86,6 +92,8 @@ class DataModel:
         }
 
         self.gen_names.append(gen_name)
+
+        self.colors[gen_name] = color
 
     def set_cf(self, cf: dict[str, float | list[float]]) -> None:
         """Set a factor to scale all renewable generators' capacity factors.
@@ -132,7 +140,7 @@ class DataModel:
         self.load_factors = load_factors
 
     def jonas(self) -> None:
-        """Predefined test data jonas.
+        """Predefined test data Jonas.
 
         In the Jonas test case (name has no meaning) data i represendted as yearly values over 20 years from 2030 2050.
         Units:
@@ -182,6 +190,7 @@ class DataModel:
             max_cf=1,
             min_cf=0,
             co2=0,
+            color="#3967FF",
         )
         self.add_generator(
             gen_name="Onshore_Wind",
@@ -194,6 +203,7 @@ class DataModel:
             max_cf=1,
             min_cf=0,
             co2=0,
+            color="#45A946",
         )
         self.add_generator(
             gen_name="Solar_PV",
@@ -206,6 +216,7 @@ class DataModel:
             max_cf=1,
             min_cf=0,
             co2=0,
+            color="#EAE561",
         )
         self.add_generator(
             gen_name="Coal",
@@ -218,6 +229,7 @@ class DataModel:
             max_cf=1,
             min_cf=0,
             co2=0.84,
+            color="black",
         )
         self.add_generator(
             gen_name="Natural_Gas",
@@ -230,6 +242,7 @@ class DataModel:
             max_cf=1,
             min_cf=0,
             co2=0.37,
+            color="brown",
         )
         self.set_scenario_factors(
             scenario_weights=[
