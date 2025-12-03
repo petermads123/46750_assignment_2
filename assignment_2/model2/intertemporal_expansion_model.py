@@ -36,6 +36,7 @@ class IntertemporalExpansionModel:
         # Create gurobi model
         if model_id == 0:
             self.model = Model("IntertemporalExpansionModel")
+            self.model.setParam("OutputFlag", 0)
 
         self.gen_names = data.gen_names
         self.T = data.T

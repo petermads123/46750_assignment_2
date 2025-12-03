@@ -19,6 +19,7 @@ class LCOEModel:
         """
         # Create gurobi model
         self.model = Model("Model1")
+        self.model.setParam("OutputFlag", 0)
         self.gen_names = data.gen_names
 
         # Define variables

@@ -18,6 +18,7 @@ dependencies = [
   "pandas",
   "gurobipy",
   "matplotlib",
+  "tqdm",
 ]
 
 # Optional groups (e.g. dev dependencies)
