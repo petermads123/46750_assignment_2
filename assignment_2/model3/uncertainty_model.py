@@ -38,5 +38,5 @@ class UncertaintyModel(IntertemporalExpansionModel):
                 data=data,
                 discount_factor=discount_factor,
                 model_id=i,
-                weigth=scenario_weights[i],
+                weight=scenario_weights[i],
             )

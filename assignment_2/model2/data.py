@@ -147,9 +147,9 @@ class DataModel:
             Energy = MWh
             Power = MWh/year
             CO2 = tonCO2/MWh
-            CO2_price = EUR/tonCO2
-            CAPEX, DECEX, fixed_OPEX = EUR/MWh/year
-            var_OPEX = EUR/MWh
+            CO2_price = DKK/tonCO2
+            CAPEX, DECEX, fixed_OPEX = DKK/MWh/year
+            var_OPEX = DKK/MWh
         """
         hours_per_year = 365 * 24
         load = np.array(
@@ -180,7 +180,7 @@ class DataModel:
         self.add_load_series((load * 10**6).tolist())
         self.add_co2_price(32.6)
         self.add_generator(
-            gen_name="Offshore_Wind",
+            gen_name="Offshore Wind",
             capex=2_630_000 * hours_per_year,
             fixed_opex=34_000 * hours_per_year,
             var_opex=3.45,
@@ -193,7 +193,7 @@ class DataModel:
             color="#3967FF",
         )
         self.add_generator(
-            gen_name="Onshore_Wind",
+            gen_name="Onshore Wind",
             capex=2_291_300 * hours_per_year,
             fixed_opex=16_500 * hours_per_year,
             var_opex=1.98,
@@ -206,7 +206,7 @@ class DataModel:
             color="#45A946",
         )
         self.add_generator(
-            gen_name="Solar_PV",
+            gen_name="Solar PV",
             capex=1_070_000 * hours_per_year,
             fixed_opex=190_000 * hours_per_year,
             var_opex=0,
@@ -232,7 +232,7 @@ class DataModel:
             color="black",
         )
         self.add_generator(
-            gen_name="Natural_Gas",
+            gen_name="Natural Gas",
             capex=1_914_070 * hours_per_year,
             fixed_opex=9_890 * hours_per_year,
             var_opex=5.40,
@@ -345,3 +345,30 @@ class DataModel:
                 1.082415531,
             ],
         )
+
+    def jonas_max_capacity_change(
+        self,
+        conv_max_factor: float | None = None,
+        renewable_max_factor: float | None = None,
+    ) -> None:
+        """Modify the Jonas test case to have a maximum capacity change constraint.
+
+        Args:
+            conv_max_factor (float | None, optional): Factor to multiply the initial capacity to get the max capacity.
+                Defaults to None.
+            renewable_max_factor (float | None, optional): Factor to multiply the initial capacity to get the max capacity for renewables.
+                Defaults to None.
+        """
+        for gen in self.gen_names:
+            if self.gen_data[gen]["co2"] > 0:
+                if conv_max_factor is None:
+                    continue
+                self.gen_data[gen]["max_capacity"] = (
+                    self.gen_data[gen]["initial_capacity"] * conv_max_factor
+                )
+            else:
+                if renewable_max_factor is None:
+                    continue
+                self.gen_data[gen]["max_capacity"] = (
+                    self.gen_data[gen]["initial_capacity"] * renewable_max_factor
+                )

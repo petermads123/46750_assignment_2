@@ -10,6 +10,7 @@ class DataModel1:
         self.co2_price: float
         self.gen_data: dict[str, dict[str, float]] = {}
         self.gen_names: list[str] = []
+        self.colors: dict[str, str] = {}
 
     def add_load(self, load: float) -> None:
         """Add load to the instance.
@@ -35,6 +36,7 @@ class DataModel1:
         max_cf: float = 1,
         min_cf: float = 0,
         co2: float = 0,
+        color: str = "gray",
     ) -> None:
         """Add generator data to the instance.
 
@@ -56,31 +58,52 @@ class DataModel1:
 
         self.gen_names.append(gen_name)
 
-    def test_1(self) -> None:
-        """Predefined test data 1."""
-        self.add_load(1000.0)
-        self.add_co2_price(10.0)
+        self.colors[gen_name] = color
+
+    def freja(self) -> None:
+        """Predefined test data Freja.
+
+        In the Freja test case (name has no meaning).
+        Units:
+            LCOE: DKK/MWh
+            Capacity: MW
+            CO2: ton/MWh
+        """
+        self.add_load(36 * 10**6 / 365 / 24)
+        self.add_co2_price(32.6)
         self.add_generator(
-            gen_name="Wind",
-            lcoe=50,
-            capacity=800.0,
-            max_cf=0.7,
+            gen_name="Offshore Wind",
+            lcoe=77,
+            capacity=2469,
+            max_cf=0.41,
             min_cf=0,
             co2=0,
+            color="#3967FF",
         )
         self.add_generator(
-            gen_name="Solar",
-            lcoe=30,
-            capacity=800.0,
-            max_cf=0.3,
+            gen_name="Onshore Wind",
+            lcoe=45,
+            capacity=4808,
+            max_cf=0.25,
             min_cf=0,
             co2=0,
+            color="#45A946",
         )
         self.add_generator(
-            gen_name="Conv",
-            lcoe=40,
-            capacity=800.0,
+            gen_name="Solar PV",
+            lcoe=41,
+            capacity=3529,
+            max_cf=0.12,
+            min_cf=0,
+            co2=0,
+            color="#EAE561",
+        )
+        self.add_generator(
+            gen_name="Natural Gas",
+            lcoe=124,
+            capacity=1706,
             max_cf=1,
-            min_cf=0.1,
-            co2=20.0,
+            min_cf=0,
+            co2=0.37,
+            color="brown",
         )
